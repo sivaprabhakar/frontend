@@ -34,7 +34,7 @@ const Profile = () => {
 
     const fetchProfile = async () => {
       try {
-        const res = await API.get("/profile");
+        const res = await API.get("api/profile");
         setProfile((prev) => ({ ...prev, ...res.data }));
       } catch {
         setError("Failed to load profile");
@@ -51,7 +51,7 @@ const Profile = () => {
 
   const handleSave = async () => {
     try {
-      await API.put("/profile", {
+      await API.put("api/profile", {
         age: profile.age,
         dob: profile.dob,
         contact: profile.contact

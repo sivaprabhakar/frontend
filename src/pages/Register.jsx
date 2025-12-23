@@ -49,7 +49,7 @@ const Register = () => {
 
     try {
       setLoading(true);
-      await API.post("/auth/register", form);
+      await API.post("api/auth/register", form);
       navigate("/login");
     } catch (err) {
       setServerError(err.response?.data?.message || "Registration failed");

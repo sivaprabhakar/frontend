@@ -44,9 +44,9 @@ const Login = () => {
     try {
       setLoading(true);
 
-      const res = await API.post("/auth/login", form);
+      const res = await API.post("api/auth/login", form);
 
-      // ✅ MongoDB-style storage
+   
       localStorage.setItem("token", res.data.token);
       localStorage.setItem(
         "user",
