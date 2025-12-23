@@ -33,40 +33,41 @@ const Login = () => {
     });
   };
 
- const handleSubmit = async () => {
-  const newErrors = {
-    email: validate("email", form.email),
-    password: validate("password", form.password)
+  const handleSubmit = async () => {
+    const newErrors = {
+      email: validate("email", form.email),
+      password: validate("password", form.password)
+    };
+    setErrors(newErrors);
+    if (Object.values(newErrors).some(Boolean)) return;
+
+    try {
+      setLoading(true);
+
+      const res = await API.post("api/auth/login", form);
+
+      // --- FIXED SECTION START ---
+      localStorage.setItem("token", res.data.token);
+      
+      // Store user details directly from response (matching your Network tab)
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          _id: res.data.id,      // specific fix: res.data.id, NOT res.data.user._id
+          name: res.data.name,   // specific fix: res.data.name
+          email: res.data.email  // specific fix: res.data.email
+        })
+      );
+      // --- FIXED SECTION END ---
+
+      navigate("/profile");
+    } catch (err) {
+      console.error("Login Error:", err);
+      setServerError(err.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
   };
-  setErrors(newErrors);
-  if (Object.values(newErrors).some(Boolean)) return;
-
-  try {
-    setLoading(true);
-
-    const res = await API.post("/auth/login", form);
-
-   
-    localStorage.setItem("token", res.data.token);
-
-   
-    localStorage.setItem(
-      "user",
-      JSON.stringify({
-        _id: res.data.id,
-        name: res.data.name,
-        email: res.data.email
-      })
-    );
-
-    navigate("/profile");
-  } catch (err) {
-    setServerError(err.response?.data?.message || "Login failed");
-  } finally {
-    setLoading(false);
-  }
-};
-
 
   return (
     <div className="container d-flex justify-content-center align-items-center min-vh-100">
