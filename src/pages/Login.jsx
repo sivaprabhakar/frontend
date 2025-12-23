@@ -33,37 +33,40 @@ const Login = () => {
     });
   };
 
-  const handleSubmit = async () => {
-    const newErrors = {
-      email: validate("email", form.email),
-      password: validate("password", form.password)
-    };
-    setErrors(newErrors);
-    if (Object.values(newErrors).some(Boolean)) return;
+ const handleSubmit = async () => {
+  const newErrors = {
+    email: validate("email", form.email),
+    password: validate("password", form.password)
+  };
+  setErrors(newErrors);
+  if (Object.values(newErrors).some(Boolean)) return;
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      const res = await API.post("api/auth/login", form);
+    const res = await API.post("/auth/login", form);
 
    
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          _id: res.data.user._id,
-          name: res.data.user.name,
-          email: res.data.user.email
-        })
-      );
+    localStorage.setItem("token", res.data.token);
 
-      navigate("/profile");
-    } catch (err) {
-      setServerError(err.response?.data?.message || "Login failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+   
+    localStorage.setItem(
+      "user",
+      JSON.stringify({
+        _id: res.data.id,
+        name: res.data.name,
+        email: res.data.email
+      })
+    );
+
+    navigate("/profile");
+  } catch (err) {
+    setServerError(err.response?.data?.message || "Login failed");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="container d-flex justify-content-center align-items-center min-vh-100">
