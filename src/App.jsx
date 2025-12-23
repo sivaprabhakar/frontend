@@ -8,14 +8,12 @@ const App = () => {
     <BrowserRouter>
       <Routes>
 
-        {/* Default route → Register */}
         <Route path="/" element={<Navigate to="/register" />} />
 
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/profile" element={<Profile />} />
 
-        {/* Catch all unknown routes */}
         <Route path="*" element={<Navigate to="/register" />} />
 
       </Routes>

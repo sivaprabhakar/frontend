@@ -1,97 +1,124 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import API from "../services/api";
 import { useNavigate } from "react-router-dom";
 
-const Profile = () => {
+const Register = () => {
   const navigate = useNavigate();
 
-  const [profile, setProfile] = useState({
+  const [form, setForm] = useState({
     name: "",
     email: "",
-    age: "",
-    dob: "",
-    contact: ""
+    password: ""
   });
 
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
+  const validateField = (name, value) => {
+    if (!value) return `Please enter ${name}`;
+    if (name === "email") {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value)) return "Please enter a valid email";
     }
-
-    // ✅ load from localStorage
-    const user = JSON.parse(localStorage.getItem("user"));
-    const storedProfile = JSON.parse(localStorage.getItem("profile"));
-
-    setProfile({
-      name: user?.email?.split("@")[0] || "",
-      email: user?.email || "",
-      age: storedProfile?.age || "",
-      dob: storedProfile?.dob || "",
-      contact: storedProfile?.contact || ""
-    });
-
-    // fetch profile from backend
-    const fetchProfile = async () => {
-      try {
-        const res = await API.get("/profile");
-        setProfile((prev) => ({
-          ...prev,
-          age: res.data?.age || "",
-          dob: res.data?.dob || "",
-          contact: res.data?.contact || ""
-        }));
-      } catch {}
-    };
-
-    fetchProfile();
-  }, [navigate]);
-
-  const handleChange = (e) => {
-    setProfile({ ...profile, [e.target.name]: e.target.value });
+    if (name === "password" && value.length < 6) {
+      return "Password must be at least 6 characters";
+    }
+    return "";
   };
 
-  const handleSave = async () => {
-    try {
-      await API.post("/profile", {
-        age: profile.age,
-        dob: profile.dob,
-        contact: profile.contact
-      });
+  const handleChange = (e) => {
+    setServerError("");
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
-      localStorage.setItem("profile", JSON.stringify(profile));
-      setMessage("Profile updated successfully");
-    } catch {
-      setError("Failed to update profile");
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setErrors({ ...errors, [name]: validateField(name, value) });
+  };
+
+  const handleSubmit = async () => {
+    const newErrors = {
+      name: validateField("name", form.name),
+      email: validateField("email", form.email),
+      password: validateField("password", form.password)
+    };
+
+    setErrors(newErrors);
+    if (Object.values(newErrors).some(Boolean)) return;
+
+    try {
+      setLoading(true);
+      await API.post("/auth/register", form);
+      navigate("/login");
+    } catch (err) {
+      setServerError(err.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="container d-flex justify-content-center align-items-center min-vh-100">
-      <div className="col-md-5">
+      <div className="col-md-4">
         <div className="card card-glass p-4">
-          <h3 className="text-center mb-3">Profile</h3>
+          <h3 className="text-center mb-4">Create Account</h3>
 
-          {error && <div className="alert alert-danger">{error}</div>}
-          {message && <div className="alert alert-success">{message}</div>}
+          {serverError && <div className="alert alert-danger">{serverError}</div>}
 
-          <input className="form-control mb-2" name="name" value={profile.name} disabled />
-          <input className="form-control mb-2" name="email" value={profile.email} disabled />
-          <input className="form-control mb-2" name="age" value={profile.age} onChange={handleChange} />
-          <input className="form-control mb-2" name="dob" value={profile.dob} onChange={handleChange} />
-          <input className="form-control mb-3" name="contact" value={profile.contact} onChange={handleChange} />
+          {/* NAME */}
+          <label>Name <span className="text-danger">*</span></label>
+          <input
+            className={`form-control mb-1 ${errors.name ? "is-invalid" : ""}`}
+            name="name"
+            placeholder="Full Name"
+            onChange={handleChange}
+            onBlur={handleBlur}
+          />
+          <small className="text-danger">{errors.name}</small>
 
-          <button className="btn btn-primary w-100" onClick={handleSave}>
-            Save Profile
+          {/* EMAIL */}
+          <label>Email <span className="text-danger">*</span></label>
+          <input
+            className={`form-control mb-1 ${errors.email ? "is-invalid" : ""}`}
+            name="email"
+            placeholder="Email"
+            onChange={handleChange}
+            onBlur={handleBlur}
+          />
+          <small className="text-danger">{errors.email}</small>
+
+          {/* PASSWORD */}
+          <label>Password <span className="text-danger">*</span></label>
+          <input
+            type="password"
+            className={`form-control mb-2 ${errors.password ? "is-invalid" : ""}`}
+            name="password"
+            placeholder="Password"
+            onChange={handleChange}
+            onBlur={handleBlur}
+          />
+          <small className="text-danger">{errors.password}</small>
+
+          <button
+            className="btn btn-primary w-100 mt-3"
+            onClick={handleSubmit}
+            disabled={loading}
+          >
+            {loading ? "Creating..." : "Register"}
           </button>
+
+          <p className="text-center mt-3">
+            Already have an account?{" "}
+            <span className="text-primary" style={{ cursor: "pointer" }}
+              onClick={() => navigate("/login")}>
+              Login
+            </span>
+          </p>
         </div>
       </div>
     </div>
   );
 };
 
-export default Profile;
+export default Register;
