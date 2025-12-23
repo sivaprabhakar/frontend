@@ -27,7 +27,10 @@ const Login = () => {
   };
 
   const handleBlur = (e) => {
-    setErrors({ ...errors, [e.target.name]: validate(e.target.name, e.target.value) });
+    setErrors({
+      ...errors,
+      [e.target.name]: validate(e.target.name, e.target.value)
+    });
   };
 
   const handleSubmit = async () => {
@@ -40,15 +43,17 @@ const Login = () => {
 
     try {
       setLoading(true);
+
       const res = await API.post("/auth/login", form);
 
-      // ✅ save session
+      // ✅ MongoDB-style storage
       localStorage.setItem("token", res.data.token);
       localStorage.setItem(
         "user",
         JSON.stringify({
-          id: res.data.id,
-          email: res.data.email
+          _id: res.data.user._id,
+          name: res.data.user.name,
+          email: res.data.user.email
         })
       );
 
@@ -77,7 +82,9 @@ const Login = () => {
           />
           <small className="text-danger">{errors.email}</small>
 
-          <label className="mt-2">Password <span className="text-danger">*</span></label>
+          <label className="mt-2">
+            Password <span className="text-danger">*</span>
+          </label>
           <input
             type="password"
             className={`form-control mb-1 ${errors.password ? "is-invalid" : ""}`}
@@ -87,14 +94,21 @@ const Login = () => {
           />
           <small className="text-danger">{errors.password}</small>
 
-          <button className="btn btn-primary w-100 mt-3" onClick={handleSubmit} disabled={loading}>
+          <button
+            className="btn btn-primary w-100 mt-3"
+            onClick={handleSubmit}
+            disabled={loading}
+          >
             {loading ? "Logging in..." : "Login"}
           </button>
 
           <p className="text-center mt-3">
             New here?{" "}
-            <span className="text-primary" style={{ cursor: "pointer" }}
-              onClick={() => navigate("/register")}>
+            <span
+              className="text-primary"
+              style={{ cursor: "pointer" }}
+              onClick={() => navigate("/register")}
+            >
               Create Account
             </span>
           </p>

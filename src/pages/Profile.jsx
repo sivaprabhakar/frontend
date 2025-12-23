@@ -23,30 +23,21 @@ const Profile = () => {
       return;
     }
 
-    // Load from localStorage
     const user = JSON.parse(localStorage.getItem("user"));
-    const storedProfile = JSON.parse(localStorage.getItem("profile"));
+    if (user) {
+      setProfile((prev) => ({
+        ...prev,
+        name: user.name,
+        email: user.email
+      }));
+    }
 
-    setProfile({
-      name: user?.email?.split("@")[0] || "",
-      email: user?.email || "",
-      age: storedProfile?.age || "",
-      dob: storedProfile?.dob || "",
-      contact: storedProfile?.contact || ""
-    });
-
-    // Fetch profile from backend
     const fetchProfile = async () => {
       try {
         const res = await API.get("/profile");
-        setProfile((prev) => ({
-          ...prev,
-          age: res.data?.age || "",
-          dob: res.data?.dob || "",
-          contact: res.data?.contact || ""
-        }));
-      } catch (err) {
-        console.error(err);
+        setProfile((prev) => ({ ...prev, ...res.data }));
+      } catch {
+        setError("Failed to load profile");
       }
     };
 
@@ -60,13 +51,11 @@ const Profile = () => {
 
   const handleSave = async () => {
     try {
-      await API.post("/profile", {
+      await API.put("/profile", {
         age: profile.age,
         dob: profile.dob,
         contact: profile.contact
       });
-
-      localStorage.setItem("profile", JSON.stringify(profile));
       setMessage("Profile updated successfully");
     } catch {
       setError("Failed to update profile");
@@ -82,47 +71,27 @@ const Profile = () => {
           {error && <div className="alert alert-danger">{error}</div>}
           {message && <div className="alert alert-success">{message}</div>}
 
-          {/* Name */}
-          <input
-            className="form-control mb-2"
-            name="name"
-            value={profile.name}
-            placeholder="Name"
-            disabled
-          />
+          <input className="form-control mb-2" value={profile.name} disabled />
+          <input className="form-control mb-2" value={profile.email} disabled />
 
-          {/* Email */}
-          <input
-            className="form-control mb-2"
-            name="email"
-            value={profile.email}
-            placeholder="Email"
-            disabled
-          />
-
-          {/* Age */}
           <input
             className="form-control mb-2"
             name="age"
-            value={profile.age || ""}
+            value={profile.age}
             placeholder="Age"
             onChange={handleChange}
           />
-
-          {/* DOB */}
           <input
             className="form-control mb-2"
             name="dob"
-            value={profile.dob || ""}
-            placeholder="Date of Birth (YYYY-MM-DD)"
+            value={profile.dob}
+            placeholder="YYYY-MM-DD"
             onChange={handleChange}
           />
-
-          {/* Contact */}
           <input
             className="form-control mb-3"
             name="contact"
-            value={profile.contact || ""}
+            value={profile.contact}
             placeholder="Contact Number"
             onChange={handleChange}
           />

@@ -18,12 +18,11 @@ const Register = () => {
   const validateField = (name, value) => {
     if (!value) return `Please enter ${name}`;
     if (name === "email") {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(value)) return "Please enter a valid email";
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!re.test(value)) return "Please enter a valid email";
     }
-    if (name === "password" && value.length < 6) {
+    if (name === "password" && value.length < 6)
       return "Password must be at least 6 characters";
-    }
     return "";
   };
 
@@ -33,8 +32,10 @@ const Register = () => {
   };
 
   const handleBlur = (e) => {
-    const { name, value } = e.target;
-    setErrors({ ...errors, [name]: validateField(name, value) });
+    setErrors({
+      ...errors,
+      [e.target.name]: validateField(e.target.name, e.target.value)
+    });
   };
 
   const handleSubmit = async () => {
@@ -43,7 +44,6 @@ const Register = () => {
       email: validateField("email", form.email),
       password: validateField("password", form.password)
     };
-
     setErrors(newErrors);
     if (Object.values(newErrors).some(Boolean)) return;
 
@@ -66,35 +66,29 @@ const Register = () => {
 
           {serverError && <div className="alert alert-danger">{serverError}</div>}
 
-          {/* NAME */}
-          <label>Name <span className="text-danger">*</span></label>
+          <label>Name *</label>
           <input
             className={`form-control mb-1 ${errors.name ? "is-invalid" : ""}`}
             name="name"
-            placeholder="Full Name"
             onChange={handleChange}
             onBlur={handleBlur}
           />
           <small className="text-danger">{errors.name}</small>
 
-          {/* EMAIL */}
-          <label>Email <span className="text-danger">*</span></label>
+          <label>Email *</label>
           <input
             className={`form-control mb-1 ${errors.email ? "is-invalid" : ""}`}
             name="email"
-            placeholder="Email"
             onChange={handleChange}
             onBlur={handleBlur}
           />
           <small className="text-danger">{errors.email}</small>
 
-          {/* PASSWORD */}
-          <label>Password <span className="text-danger">*</span></label>
+          <label>Password *</label>
           <input
             type="password"
             className={`form-control mb-2 ${errors.password ? "is-invalid" : ""}`}
             name="password"
-            placeholder="Password"
             onChange={handleChange}
             onBlur={handleBlur}
           />
@@ -110,8 +104,11 @@ const Register = () => {
 
           <p className="text-center mt-3">
             Already have an account?{" "}
-            <span className="text-primary" style={{ cursor: "pointer" }}
-              onClick={() => navigate("/login")}>
+            <span
+              className="text-primary"
+              style={{ cursor: "pointer" }}
+              onClick={() => navigate("/login")}
+            >
               Login
             </span>
           </p>
